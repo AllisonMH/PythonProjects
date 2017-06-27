@@ -1,0 +1,102 @@
+import functools
+debuglvl =0
+import numbers
+blacklist = []
+expansion = []
+board = [[2,'b','b','w'], [0,3,'w','c'], ['w', 'b', 'w',1],['w',1,'w','b']]
+
+#board = [[2,'w','w','w'], [0,3,'w','c'], ['w', 'w', 'w',1], ['w',1,'w','w']]
+boardlen = len(board)
+
+def inbounds(x,y):
+    if x >= 0 and y >= 0 and x < len(board) and y < len(board) and [x,y] not in blacklist:
+            return True
+    else:
+            return False
+#print (check(1,1))
+def findblack(x,y,expansion, blacklist):
+  
+     coordinates = [[x+1,y,"south"],
+                    [x-1, y,"north"], 
+                    [x,y+1, "east"],
+                     [x,y-1, "west"]]
+     if debuglvl > 15:
+         print ("coordinates", coordinates)
+     for x, y, direction in coordinates:
+        if debuglvl > 15:
+          print ("working on",x,y, inbounds(x,y))
+          print ( direction, " checking: ",x,y, inbounds(x,y))
+        if inbounds(x,y) and  board[x] [y] == 'b':
+             if debuglvl > 15:
+                print (direction," expanding",x,y)
+             expansion.append([x,y])
+             blacklist.append([x,y])
+      
+def blackcount(position):
+    expansion[:] = [position]
+    blacklist[:] = []
+    while expansion:
+        x,y = expansion.pop(0)
+        if debuglvl >15:
+             print (x,y, "moving to black count")
+        findblack(x,y,expansion, blacklist)
+        if debuglvl > 15:
+            print ("blacklist",blacklist)
+            print ("Expansion",expansion )
+    if debuglvl > 15:
+         print("Black squares connected to numbered square" ,len(blacklist))
+    return len(blacklist)
+
+#blackcount([0,0])  
+
+
+comp = [[x,y]for x in range (boardlen) for y in range (boardlen) if isinstance (board[x][y],numbers.Integral)]
+
+#location of squares being printed 
+print(comp)
+
+#numeric values of squares 
+numreq = [board[c[0]] [c[1]] for c in comp]
+
+#number of black squares connected to these numbered square 
+compnew = [blackcount(c) for c in comp]
+
+
+#true or false of whether the number of black squares matches the numeric values of the squares they are "from"
+comparison= [ (compnew[x] == numreq[x]) for x in range (len(comp))]
+
+print ("compnew: ",compnew)
+
+print ("numreq: ", numreq)
+
+print ("comparison: ",comparison)
+
+#reduction tells whether the entire board is in "goal or not"
+print ("reduction: ", functools.reduce(lambda numreq, compnew: numreq and compnew, comparison))
+
+#number of squares in board 
+binstrlen = len(board)**2
+
+#function to convert integer to binary
+get_bin = lambda x, n: format(x, 'b').zfill(n)
+
+
+
+#generates right child of binary string
+def rightchild(p):
+    r = 2*p + 2
+    print("rightchild: ", r, get_bin(r, boardlen))
+
+#generates right child of binary string
+def leftchild(p):
+   l = 2*p+1
+   print("leftchild: ", l, get_bin(l, boardlen))
+
+i = 0
+print(get_bin(i, binstrlen))
+
+while i < binstrlen **4:
+    leftchild(i)
+    rightchild(i)
+    i+=1
+    # actual solution is 33286 but not sure how to stop
